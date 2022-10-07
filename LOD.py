@@ -1,6 +1,7 @@
 # Code source: Jaques Grobler
 # License: BSD 3 clause
 
+import math
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -31,45 +32,26 @@ data_3rd = dataMean(data_3rd, nRow)
 
 data = np.hstack((data_1st, data_2nd, data_3rd))
 
-selectNum = 3
+selectNum = 4
 data = data[0:selectNum]
 conc = conc[0:selectNum]
 
+#  print(conc)
+conc = [math.log(x) for x in conc]
+#  print(conc)
+
+#  breakpoint()
+data = data.transpose()
 data = data.reshape(-1, 1)
-conc = np.tile(np.array([conc]), (1, selectNum))
+#  data = data.reshape(-1, 1)
+conc = np.tile(np.array([conc]), (1, 3))
 conc = conc.reshape(-1, 1)
 
-#  breakpoint()
-#  data = dataMean(data, nRow)
-
-#  import pdb; pdb.set_trace()
-#  data_1st = data_1st[0:selectNum*4, :]
-#  conc = conc[selectNum:]
-#  data_1st = data_1st[selectNum:, :]
-
-#  print(conc)
-#  print(data_1st)
-#  import pdb; pdb.set_trace()
-
-#  concData = np.tile(np.array([conc]), (1, 16))
-#  concData = np.tile(np.array([conc]).transpose(), (1, 16))
-
-#  breakpoint()
-#  print(f"transpose(1,4){ concData }")
-#  data_1st = data_1st.flatten().reshape(-1, 1)
-#  data_1st = data_1st.flatten()
-#  print(f"flatten and reshape{data_1st}")
-#  concData = concData.flatten().reshape(-1, 1)
-#  import pdb; pdb.set_trace()
-
-# Create linear regression object
+# ------ linear regression -------
 regr = linear_model.LinearRegression()
-
 # Train the model using the training sets
 #  regr.fit(diabetes_X_train, diabetes_y_train)
 regr.fit(conc, data)
-#  import pdb; pdb.set_trace()
-
 # Make predictions using the testing set
 data_y_pred = regr.predict(conc)
 
@@ -78,6 +60,8 @@ SD = np.mean(dev ** 2)
 LOD = 3.3 * SD / regr.coef_
 LOD = LOD[0][0]
 
+conc = [math.exp(x) for x in conc]
+print(conc)
 # the LOD 
 print('LOD: \n', LOD)
 # The coefficients
@@ -86,21 +70,22 @@ print("Coefficients: \n", regr.coef_)
 
 sns.set_theme(style='darkgrid')
 print(conc)
-conc = conc.flatten()
+#  conc = conc.flatten()
 print(conc)
 print(data)
-plt.scatter(conc, data, color="black")
+plt.scatter(conc, data, color="C0")
 #  breakpoint()
-plt.plot(conc, data_y_pred, color="blue", linewidth=3)
+plt.plot(conc, data_y_pred, color="C1", linewidth=3)
+plt.title('LOD: 3.3x$\u03C3$/slop = '+ ' '+ str(round(LOD, 2)) + ' pM')
 plt.xlabel('Spike Concentration (pM)')
-plt.text(np.mean(conc), max(data), 'LOD: 3.3x$\u03C3$/slop = '+ ' '+ str(round(LOD, 2)),\
-          horizontalalignment='center', size='x-large', color='k', weight='semibold')
+#  plt.text(np.mean(conc), max(data), 'LOD: 3.3x$\u03C3$/slop = '+ ' '+ str(round(LOD, 2)),\
+          #  horizontalalignment='center', size='x-large', color='k', weight='semibold')
 
 plt.ylabel('Bead number per 100 X 100 $\mu$$m^2$')
 #  plt.xticks(())
 #  plt.yticks(())
 #  import pdb; pdb.set_trace()
-
+plt.xscale('log')
 plt.show()
 
-breakpoint()
+#  breakpoint()
