@@ -82,9 +82,6 @@ plt.xlabel('Spike Concentration (pM)')
           #  horizontalalignment='center', size='x-large', color='k', weight='semibold')
 
 plt.ylabel('Bead number per 100 X 100 $\mu$$m^2$')
-#  plt.xticks(())
-#  plt.yticks(())
-#  import pdb; pdb.set_trace()
 plt.xscale('log')
 plt.show()
 
