@@ -18,7 +18,7 @@ def dataMean(data, nRow):
     return data
 
 conc = np.loadtxt('2022-08-30_POCT_Conc.txt')
-conc = conc.reshape(-1, 1)
+#  conc = conc.reshape(-1, 1)
 nRow = len(conc)
 
 data_1st = np.loadtxt('2022-08-30_POCT_data.txt')
@@ -30,10 +30,17 @@ data_2nd = dataMean(data_2nd, nRow)
 data_3rd = dataMean(data_3rd, nRow)
 
 data = np.hstack((data_1st, data_2nd, data_3rd))
-#  data = dataMean(data, nRow)
+
 selectNum = 3
-conc = conc[0:selectNum]
 data = data[0:selectNum]
+conc = conc[0:selectNum]
+
+data = data.reshape(-1, 1)
+conc = np.tile(np.array([conc]), (1, selectNum))
+conc = conc.reshape(-1, 1)
+
+#  breakpoint()
+#  data = dataMean(data, nRow)
 
 #  import pdb; pdb.set_trace()
 #  data_1st = data_1st[0:selectNum*4, :]
