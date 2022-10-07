@@ -39,30 +39,6 @@ data = data.reshape(-1, 1)
 conc = np.tile(np.array([conc]), (1, selectNum))
 conc = conc.reshape(-1, 1)
 
-#  breakpoint()
-#  data = dataMean(data, nRow)
-
-#  import pdb; pdb.set_trace()
-#  data_1st = data_1st[0:selectNum*4, :]
-#  conc = conc[selectNum:]
-#  data_1st = data_1st[selectNum:, :]
-
-#  print(conc)
-#  print(data_1st)
-#  import pdb; pdb.set_trace()
-
-#  concData = np.tile(np.array([conc]), (1, 16))
-#  concData = np.tile(np.array([conc]).transpose(), (1, 16))
-
-#  breakpoint()
-#  print(f"transpose(1,4){ concData }")
-#  data_1st = data_1st.flatten().reshape(-1, 1)
-#  data_1st = data_1st.flatten()
-#  print(f"flatten and reshape{data_1st}")
-#  concData = concData.flatten().reshape(-1, 1)
-#  import pdb; pdb.set_trace()
-
-# Create linear regression object
 regr = linear_model.LinearRegression()
 
 # Train the model using the training sets
@@ -97,10 +73,6 @@ plt.text(np.mean(conc), max(data), 'LOD: 3.3x$\u03C3$/slop = '+ ' '+ str(round(L
           horizontalalignment='center', size='x-large', color='k', weight='semibold')
 
 plt.ylabel('Bead number per 100 X 100 $\mu$$m^2$')
-#  plt.xticks(())
-#  plt.yticks(())
-#  import pdb; pdb.set_trace()
-
 plt.show()
 
 breakpoint()
