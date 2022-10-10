@@ -56,7 +56,7 @@ regr.fit(conc, data)
 data_y_pred = regr.predict(conc)
 
 dev = data - data_y_pred
-SD = math.sqrt(np.mean(dev ** 2) / len(data))
+SD = math.sqrt(np.mean(dev ** 2))
 LOD = 3.3 * SD / regr.coef_
 LOD = LOD[0][0]
 
