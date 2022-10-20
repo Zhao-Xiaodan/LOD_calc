@@ -32,10 +32,16 @@ data_3rd = dataMean(data_3rd, nRow)
 
 data = np.hstack((data_1st, data_2nd, data_3rd))
 
+data2 = np.array(data).copy()
+conc2 = np.array(conc).copy()
+
 selectNum = 4
 data = data[0:selectNum]
 conc = conc[0:selectNum]
+conc2 = conc2[0:selectNum]
+data2 = data2[0:selectNum]
 
+#  breakpoint()
 #  print(conc)
 conc = [math.log(x) for x in conc]
 #  print(conc)
@@ -62,7 +68,7 @@ LOD = LOD[0][0]
 
 print(len(data))
 print(SD)
-breakpoint()
+#  breakpoint()
 conc = [math.exp(x) for x in conc]
 print(conc)
 # the LOD 
@@ -76,9 +82,13 @@ print(conc)
 #  conc = conc.flatten()
 print(conc)
 print(data)
-plt.scatter(conc, data, color="C0")
+#  plt.scatter(conc, data, color="C0")
 #  breakpoint()
-plt.plot(conc, data_y_pred, color="C1", linewidth=3)
+
+#  plt.boxplot(data2.transpose(), labels=conc2)
+plt.errorbar(conc2, np.mean(data2, axis=1), yerr=np.std(data2,axis=1))
+#  breakpoint()
+#  plt.plot(conc, data_y_pred, color="C1", linewidth=3)
 plt.title('LOD: 3.3x$\u03C3$/slop = '+ ' '+ str(round(LOD, 2)) + ' pM')
 plt.xlabel('Spike Concentration (pM)')
 #  plt.text(np.mean(conc), max(data), 'LOD: 3.3x$\u03C3$/slop = '+ ' '+ str(round(LOD, 2)),\
