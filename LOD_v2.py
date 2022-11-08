@@ -10,10 +10,54 @@ import numpy as np
 import pandas as pd
 from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.utils import resample
 
 '''
 read data from expData folder
 '''
+def calc_LOD(df):
+    """
+    using linear regression
+    """
+    df['conc_log'] = np.log(df['Concentration'])
+    regr = linear_model.LinearRegression()
+    # Train the model using the training sets
+    #  regr.fit(diabetes_X_train, diabetes_y_train)
+    X_train = df['conc_log'].values.reshape(-1, 1)
+    Y_train = df['Signal'].values.reshape(-1, 1)
+    regr.fit(X_train, Y_train)
+    # Make predictions using the testing set
+    data_y_pred = regr.predict(X_train)
+
+    dev = Y_train - data_y_pred
+    SD = math.sqrt(np.mean(dev ** 2))
+    LOD = 3.3 * SD / regr.coef_
+    LOD = LOD[0][0]
+    return LOD, data_y_pred
+
+def resample_pdFormat(df):
+    """
+    using sklearn library
+    """
+    df_wide = df.pivot(columns='Concentration', values='Signal')
+    df_wide = df_wide.apply(lambda x: pd.Series(x.dropna().values))
+
+    #  boot = resample(data, replace=True, n_samples=4, random_state=1)
+
+    col = df_wide.columns
+
+    boot = [np.nan] * len(col)
+    for i in range(len(col)):
+        data = df_wide[col[i]].values
+        boot[i] = resample(data, replace=True,
+                           n_samples=len(data),
+                           random_state=None)
+
+    df_boot = pd.DataFrame(np.array(boot).transpose())
+    df_boot.columns = col
+    df_melt = pd.melt(df_boot, value_name='Signal')
+    return df_melt
+
 def dataMean(data, nRow):
     data = data.reshape(nRow, -1)
     data = np.mean(data, axis=1)
@@ -24,7 +68,8 @@ def dataMean(data, nRow):
 rawData_ls = []
 infoData_ls = []
 basepath = Path(__file__).parent
-basepath = basepath / "expData"
+#  basepath = basepath / "expData_all"
+basepath = basepath / "expData_part"
 
 for file in listdir(basepath):
     if file.endswith(".txt"):
@@ -73,37 +118,35 @@ df = pd.DataFrame(dic)
 df = df.loc[~((df['Concentration'] == 1e-2) |
               (df['Concentration'] == 100) |
               (df['Concentration'] == 500))]
-df['conc_log'] = np.log(df['Concentration'])
 df = df.sort_values(by=['FileNum'])
 
-#  breakpoint()
-# ------ linear regression -------
-regr = linear_model.LinearRegression()
-# Train the model using the training sets
-#  regr.fit(diabetes_X_train, diabetes_y_train)
-X_train = df['conc_log'].values.reshape(-1, 1)
-Y_train = df['Signal'].values.reshape(-1, 1)
-regr.fit(X_train, Y_train)
-# Make predictions using the testing set
-data_y_pred = regr.predict(X_train)
+#  N = 10000
+N = 100
+LOD_ls = []
+for i in range(N):
+    df_melt = resample_pdFormat(df)
+    LOD, data_y_pred = calc_LOD(df_melt)
+    LOD_ls.append(LOD)
 
-dev = Y_train - data_y_pred
-SD = math.sqrt(np.mean(dev ** 2))
-LOD = 3.3 * SD / regr.coef_
-LOD = LOD[0][0]
+LOD_mean = np.mean(LOD_ls)
+LOD_std = np.std(LOD_ls)
+print(f"LOD mean: {LOD_mean}, LOD std: {LOD_std}")
+breakpoint()
 
+# ------ plot ---------
+LOD, data_y_pred = calc_LOD(df)
 sns.set_theme(style='white')
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(3,2))
 #  ax.set(xscale="log", yscale='log')
 sns.lineplot(data=df, x="Concentration", y="Signal",
              err_style="bars", marker='o', markersize=10, lw=0)
 sns.scatterplot(data=df, x='Concentration', y='Signal')
-sns.lineplot(data=df, x='Concentration', y='Signal',
-             marker='o', markersize=10, ci='sd', lw=0, ax=ax)
+#  sns.lineplot(data=df, x='Concentration', y='Signal', marker='o', lw=0)
+             #  marker='o', markersize=10, ci='sd', lw=0, ax=ax)
 plt.plot(df['Concentration'], data_y_pred, color="C1", linewidth=2)
-plt.title('LOD: 3.3x$\u03C3$/slop = '+ ' '+ str(round(LOD, 2)) + ' pM')
-plt.xlabel('Spike Concentration (pM)')
-plt.ylabel('Bead number per 100 X 100 $\mu$$m^2$')
+#  plt.title('LOD: 3.3x$\u03C3$/slop = '+ ' '+ str(round(LOD, 2)) + ' pM')
+plt.xlabel('CR3022 Concentration (pM)')
+#  plt.ylabel('Bead number per 100 X 100 $\mu$$m^2$')
 #  plt.xscale('log')
 #  ax.set_xlim(0.01, 25)
 ax.set_xscale('log')
@@ -111,6 +154,13 @@ ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 #  ax.spines['bottom'].set_visible(False)
 #  ax.spines['left'].set_visible(False)
+
+#  plt.savefig("LOD_inset.svg")
 plt.show()
+# --- Bootstraping -------
+
+
+
+
 
 breakpoint()
